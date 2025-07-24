@@ -1,0 +1,56 @@
+module.exports = {
+  root: true,
+  env: {
+    node: true,
+    es2021: true,
+    jest: true,
+  },
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:prettier/recommended',
+  ],
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    ecmaVersion: 12,
+    sourceType: 'module',
+  },
+  plugins: ['@typescript-eslint', 'prettier'],
+  rules: {
+    'prettier/prettier': 'error',
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
+    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    'no-unused-vars': 'off', // Use @typescript-eslint/no-unused-vars instead
+    'require-await': 'error',
+    'no-return-await': 'error',
+    'no-var': 'error',
+    'prefer-const': 'error',
+    'object-shorthand': 'error',
+    'prefer-template': 'error',
+    'no-param-reassign': 'error',
+    'prefer-arrow-callback': 'error',
+    'no-useless-constructor': 'off',
+    '@typescript-eslint/no-useless-constructor': 'error',
+    'no-dupe-else-if': 'error',
+    'no-duplicate-imports': 'error',
+    'dot-notation': 'error',
+    'no-else-return': 'error',
+    'no-lonely-if': 'error',
+    'no-unneeded-ternary': 'error',
+    'one-var': ['error', 'never'],
+    'prefer-destructuring': 'error',
+    'spaced-comment': 'error',
+  },
+  overrides: [
+    {
+      files: ['**/*.test.ts', '**/*.spec.ts'],
+      env: {
+        jest: true,
+      },
+    },
+  ],
+};

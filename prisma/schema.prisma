@@ -1,0 +1,108 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  firstName     String
+  lastName      String
+  avatar        String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  transactions  Transaction[]
+  budgets       Budget[]
+  categories    Category[]
+  refreshTokens RefreshToken[]
+  chatHistory  AIChatHistory[]
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Transaction {
+  id          String    @id @default(uuid())
+  amount      Float
+  type        String    // 'income' or 'expense'
+  description String
+  date        DateTime  @default(now())
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id])
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([categoryId])
+  @@index([date])
+}
+
+model Category {
+  id            String       @id @default(uuid())
+  name          String
+  icon          String?
+  color         String?
+  type          String       // 'income' or 'expense'
+  userId        String?
+  user          User?        @relation(fields: [userId], references: [id])
+  transactions  Transaction[]
+  budgets       Budget[]
+  parentId      String?
+  parent        Category?    @relation("CategoryToCategory", fields: [parentId], references: [id])
+  children      Category[]   @relation("CategoryToCategory")
+  isSystem      Boolean      @default(false)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@unique([name, userId])
+  @@index([userId])
+  @@index([parentId])
+}
+
+model Budget {
+  id          String   @id @default(uuid())
+  amount      Float
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  month       Int
+  year        Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, categoryId, month, year])
+  @@index([userId])
+  @@index([categoryId])
+}
+
+model AIChatHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  role      String   // 'user' or 'assistant'
+  content   String
+  timestamp DateTime @default(now())
+
+  @@index([userId])
+  @@index([timestamp])
+}
