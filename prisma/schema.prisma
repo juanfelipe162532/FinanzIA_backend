@@ -6,12 +6,12 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id            String    @id @default(uuid())
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
   email         String    @unique
   password      String
   firstName     String
@@ -23,13 +23,13 @@ model User {
   budgets       Budget[]
   categories    Category[]
   refreshTokens RefreshToken[]
-  chatHistory  AIChatHistory[]
+  chatHistory   AIChatHistory[]
 }
 
 model RefreshToken {
-  id        String   @id @default(uuid())
+  id        String   @id @default(uuid()) @map("_id")
   token     String   @unique
-  userId    String
+  userId    String   @db.ObjectId
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
   createdAt DateTime @default(now())
@@ -39,14 +39,14 @@ model RefreshToken {
 }
 
 model Transaction {
-  id          String    @id @default(uuid())
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
   amount      Float
   type        String    // 'income' or 'expense'
   description String
   date        DateTime  @default(now())
-  categoryId  String
+  categoryId  String    @db.ObjectId
   category    Category  @relation(fields: [categoryId], references: [id])
-  userId      String
+  userId      String    @db.ObjectId
   user        User      @relation(fields: [userId], references: [id])
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -57,17 +57,17 @@ model Transaction {
 }
 
 model Category {
-  id            String       @id @default(uuid())
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
   name          String
   icon          String?
   color         String?
   type          String       // 'income' or 'expense'
-  userId        String?
+  userId        String?      @db.ObjectId
   user          User?        @relation(fields: [userId], references: [id])
   transactions  Transaction[]
   budgets       Budget[]
-  parentId      String?
-  parent        Category?    @relation("CategoryToCategory", fields: [parentId], references: [id])
+  parentId      String?      @db.ObjectId
+  parent        Category?    @relation("CategoryToCategory", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   children      Category[]   @relation("CategoryToCategory")
   isSystem      Boolean      @default(false)
   createdAt     DateTime     @default(now())
@@ -79,11 +79,11 @@ model Category {
 }
 
 model Budget {
-  id          String   @id @default(uuid())
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   amount      Float
-  categoryId  String
+  categoryId  String   @db.ObjectId
   category    Category @relation(fields: [categoryId], references: [id])
-  userId      String
+  userId      String   @db.ObjectId
   user        User     @relation(fields: [userId], references: [id])
   month       Int
   year        Int
@@ -96,8 +96,8 @@ model Budget {
 }
 
 model AIChatHistory {
-  id        String   @id @default(uuid())
-  userId    String
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
   user      User     @relation(fields: [userId], references: [id])
   role      String   // 'user' or 'assistant'
   content   String
