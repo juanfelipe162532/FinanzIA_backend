@@ -33,11 +33,21 @@ app.get('/health', (req, res) => {
 // API routes will be mounted here
 import authRoutes from './routes/auth.routes';
 import dataRoutes from './routes/data.routes';
+import userRoutes from './routes/user.routes';
+import transactionRoutes from './routes/transaction.routes';
+import categoryRoutes from './routes/category.routes';
+import budgetRoutes from './routes/budget.routes';
+import aiRoutes from './routes/ai.routes';
+import dashboardRoutes from './routes/dashboard.routes';
+
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/data', dataRoutes);
-// app.use('/api/v1/users', userRouter);
-// app.use('/api/v1/transactions', transactionRouter);
-// app.use('/api/v1/ai', aiRouter);
+app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/transactions', transactionRoutes);
+app.use('/api/v1/categories', categoryRoutes);
+app.use('/api/v1/budgets', budgetRoutes);
+app.use('/api/v1/ai', aiRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
 
 // Error handling middleware
 app.use(notFoundHandler);
