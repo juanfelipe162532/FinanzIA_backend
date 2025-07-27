@@ -1,9 +1,16 @@
+import { ObjectId } from 'mongodb';
 import prisma from '../config/database';
 import { logger } from '../utils/logger';
+import { AppError } from '../middlewares/error.middleware';
 
 export class TransactionService {
   /**
    * Obtiene transacciones del usuario con filtros y paginación
+   * @param userId
+   * @param page
+   * @param limit
+   * @param filters
+   * @returns
    */
   static async getUserTransactions(
     userId: string,
@@ -18,7 +25,7 @@ export class TransactionService {
   ) {
     try {
       const skip = (page - 1) * limit;
-      
+
       const where: any = { userId };
 
       if (filters.type) {
@@ -57,7 +64,7 @@ export class TransactionService {
       const totalPages = Math.ceil(total / limit);
 
       logger.info(`Retrieved ${transactions.length} transactions for user ${userId}`);
-      
+
       return {
         data: transactions,
         pagination: {
@@ -80,6 +87,11 @@ export class TransactionService {
    */
   static async createTransaction(transactionData: any) {
     try {
+      // Validate categoryId is a valid ObjectId if provided
+      if (transactionData.categoryId && !ObjectId.isValid(transactionData.categoryId)) {
+        throw new AppError('Invalid category ID format', 400);
+      }
+
       const transaction = await prisma.transaction.create({
         data: {
           amount: transactionData.amount,
@@ -98,6 +110,9 @@ export class TransactionService {
       return transaction;
     } catch (error) {
       logger.error('Error creating transaction:', error);
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'P2023') {
+        throw new AppError('Invalid category ID format', 400);
+      }
       throw new Error('Failed to create transaction');
     }
   }
@@ -176,6 +191,9 @@ export class TransactionService {
 
   /**
    * Obtiene estadísticas de transacciones
+   * @param userId
+   * @param period
+   * @returns
    */
   static async getTransactionStats(userId: string, period: string = 'month') {
     try {
