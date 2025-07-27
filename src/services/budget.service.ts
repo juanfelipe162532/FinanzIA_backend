@@ -1,5 +1,7 @@
 import prisma from '../config/database';
 import { logger } from '../utils/logger';
+import { AppError } from '../middlewares/error.middleware';
+import { validateCategoryId } from '../utils/validation';
 
 export class BudgetService {
   /**
@@ -22,16 +24,12 @@ export class BudgetService {
         include: {
           category: true,
         },
-        orderBy: [
-          { year: 'desc' },
-          { month: 'desc' },
-          { category: { name: 'asc' } },
-        ],
+        orderBy: [{ year: 'desc' }, { month: 'desc' }, { category: { name: 'asc' } }],
       });
 
       // Calcular gastos actuales para cada presupuesto
       const budgetsWithSpent = await Promise.all(
-        budgets.map(async (budget) => {
+        budgets.map(async budget => {
           const spent = await prisma.transaction.aggregate({
             where: {
               userId,
@@ -51,12 +49,13 @@ export class BudgetService {
             ...budget,
             spent: spent._sum.amount || 0,
             remaining: budget.amount - (spent._sum.amount || 0),
-            percentageUsed: budget.amount > 0 ? ((spent._sum.amount || 0) / budget.amount) * 100 : 0,
+            percentageUsed: ((spent._sum.amount || 0) / budget.amount) * 100,
           };
         })
       );
 
       logger.info(`Retrieved ${budgets.length} budgets for user ${userId}`);
+
       return budgetsWithSpent;
     } catch (error) {
       logger.error('Error fetching user budgets:', error);
@@ -69,6 +68,13 @@ export class BudgetService {
    */
   static async createBudget(budgetData: any) {
     try {
+      // Validate and normalize categoryId
+      try {
+        budgetData.categoryId = await validateCategoryId(budgetData.categoryId);
+      } catch (error: any) {
+        throw new AppError(error.message || 'ID de categoría inválido', 400);
+      }
+
       const budget = await prisma.budget.create({
         data: {
           amount: budgetData.amount,
@@ -86,7 +92,19 @@ export class BudgetService {
       return budget;
     } catch (error) {
       logger.error('Error creating budget:', error);
-      throw new Error('Failed to create budget');
+      if (error && typeof error === 'object' && 'code' in error) {
+        if (error.code === 'P2023') {
+          throw new AppError('Formato de ID de categoría inválido', 400);
+        } else if (error.code === 'P2002') {
+          throw new AppError(
+            'Ya existe un presupuesto para esta categoría en el período especificado',
+            400
+          );
+        } else if (error.code === 'P2003') {
+          throw new AppError('La categoría especificada no existe', 400);
+        }
+      }
+      throw new Error('No se pudo crear el presupuesto');
     }
   }
 
@@ -209,7 +227,7 @@ export class BudgetService {
 
       // Calcular gastos y análisis para cada presupuesto
       const budgetsWithAnalysis = await Promise.all(
-        budgets.map(async (budget) => {
+        budgets.map(async budget => {
           const [spent, transactionCount] = await Promise.all([
             prisma.transaction.aggregate({
               where: {

@@ -1,7 +1,7 @@
-import { ObjectId } from 'mongodb';
 import prisma from '../config/database';
 import { logger } from '../utils/logger';
 import { AppError } from '../middlewares/error.middleware';
+import { validateCategoryId } from '../utils/validation';
 
 export class TransactionService {
   /**
@@ -87,9 +87,13 @@ export class TransactionService {
    */
   static async createTransaction(transactionData: any) {
     try {
-      // Validate categoryId is a valid ObjectId if provided
-      if (transactionData.categoryId && !ObjectId.isValid(transactionData.categoryId)) {
-        throw new AppError('Invalid category ID format', 400);
+      // Validate and normalize categoryId if provided
+      if (transactionData.categoryId) {
+        try {
+          transactionData.categoryId = await validateCategoryId(transactionData.categoryId);
+        } catch (error: any) {
+          throw new AppError(error.message || 'ID de categoría inválido', 400);
+        }
       }
 
       const transaction = await prisma.transaction.create({
@@ -110,8 +114,12 @@ export class TransactionService {
       return transaction;
     } catch (error) {
       logger.error('Error creating transaction:', error);
-      if (error && typeof error === 'object' && 'code' in error && error.code === 'P2023') {
-        throw new AppError('Invalid category ID format', 400);
+      if (error && typeof error === 'object' && 'code' in error) {
+        if (error.code === 'P2023') {
+          throw new AppError('Formato de ID de categoría inválido', 400);
+        } else if (error.code === 'P2003') {
+          throw new AppError('La categoría especificada no existe', 400);
+        }
       }
       throw new Error('Failed to create transaction');
     }
