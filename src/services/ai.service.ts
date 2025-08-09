@@ -1,15 +1,34 @@
 import prisma from '../config/database';
 import { logger } from '../utils/logger';
+import { BedrockRuntimeClient, ConverseCommand, ConversationRole } from '@aws-sdk/client-bedrock-runtime';
 
 export class AIService {
+  private static client = new BedrockRuntimeClient({
+    region: "us-east-1",
+    credentials: {
+      accessKeyId: "AKIAXFEZEY7QFP5DQT75",
+      secretAccessKey: "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"
+    }
+  });
+
+  private static modelId = "amazon.nova-lite-v1:0";
+  
+  private static genericSystemPrompt = `Eres un asistente virtual experto en finanzas personales y empresariales. Respondes siempre de forma clara, profesional y amigable, evitando tecnicismos complejos. Mantén tus respuestas cortas y al punto, con un máximo de 3-4 oraciones. No des consejos fuera del ámbito financiero. Evita opiniones personales o temas no relacionados con finanzas. Siempre ofrece explicaciones simples y útiles para el usuario.`;
   /**
    * Envía un mensaje al AI y guarda en historial
    */
   static async sendChatMessage(userId: string, message: string, context?: any) {
     try {
-      // Aquí iría la lógica de integración con el AI (OpenAI, etc.)
-      // Por ahora simularemos una respuesta
-      const aiResponse = await this.generateAIResponse(message, context, userId);
+      // Obtener información del usuario para personalizar la respuesta
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { firstName: true, lastName: true }
+      });
+      
+      const userName = user ? `${user.firstName} ${user.lastName}` : 'Usuario';
+      
+      // Generar respuesta con AWS Bedrock
+      const aiResponse = await this.generateAIResponse(message, context, userName);
 
       // Guardar mensaje del usuario
       const userEntry = await prisma.aIChatHistory.create({
@@ -25,7 +44,7 @@ export class AIService {
         data: {
           userId,
           role: 'assistant',
-          content: aiResponse.content,
+          content: aiResponse,
         },
       });
 
@@ -34,8 +53,7 @@ export class AIService {
       return {
         id: aiEntry.id,
         userMessage: message,
-        aiResponse: aiResponse.content,
-        suggestions: aiResponse.suggestions,
+        aiResponse: aiResponse,
         timestamp: aiEntry.timestamp,
       };
     } catch (error) {
@@ -159,31 +177,48 @@ export class AIService {
   }
 
   /**
-   * Genera respuesta del AI (simulada)
+   * Genera respuesta del AI usando AWS Bedrock
    */
-  private static async generateAIResponse(message: string, context: any, userId: string) {
-    // Aquí iría la integración real con OpenAI o similar
-    // Por ahora retornamos respuestas simuladas
+  private static async generateAIResponse(message: string, context: any, userName: string): Promise<string> {
+    try {
+      // Crear el prompt personalizado incluyendo el nombre del usuario
+      const userPrompt = `Usuario: ${userName}\nPregunta: ${message}`;
+      
+      const input = {
+        modelId: this.modelId,
+        messages: [
+          {
+            role: ConversationRole.USER,
+            content: [{ text: userPrompt }]
+          }
+        ],
+        systemPrompts: [
+          {
+            text: this.genericSystemPrompt
+          }
+        ],
+        inferenceConfig: {
+          maxTokens: 1200,
+          temperature: 0.5
+        }
+      };
 
-    const responses = [
-      {
-        content: "Basándome en tus patrones de gasto, te recomiendo revisar tus gastos en entretenimiento. Podrías ahorrar un 15% reduciendo las salidas a restaurantes.",
-        suggestions: ["Cocinar más en casa", "Buscar ofertas en restaurantes", "Establecer un presupuesto semanal para entretenimiento"]
-      },
-      {
-        content: "Tus ingresos han sido consistentes este mes. Es un buen momento para aumentar tu fondo de emergencia.",
-        suggestions: ["Ahorrar 10% adicional", "Considerar inversiones a largo plazo", "Revisar seguros"]
-      },
-      {
-        content: "He notado que gastas más los fines de semana. Te sugiero planificar un presupuesto específico para estos días.",
-        suggestions: ["Presupuesto de fin de semana", "Actividades gratuitas", "Comparar precios antes de comprar"]
+      const command = new ConverseCommand(input);
+      const response = await this.client.send(command);
+
+      const aiResponse = response.output?.message?.content?.[0]?.text;
+
+      if (aiResponse && aiResponse.trim() !== "") {
+        logger.info(`AI response generated for user ${userName}`);
+        return aiResponse;
+      } else {
+        logger.warn("No response received from AI model");
+        return "Lo siento, no pude generar una respuesta en este momento. Por favor intenta nuevamente.";
       }
-    ];
-
-    // Seleccionar respuesta aleatoria (en producción sería basada en AI real)
-    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-
-    return randomResponse;
+    } catch (error) {
+      logger.error('Error generating AI response:', error);
+      return "Disculpa, ocurrió un error al procesar tu consulta. Por favor intenta nuevamente.";
+    }
   }
 
   /**
