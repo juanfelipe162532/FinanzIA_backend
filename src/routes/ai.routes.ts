@@ -15,6 +15,13 @@ router.use(protect);
 router.post('/chat', AIController.sendChatMessage);
 
 /**
+ * @route   POST /api/v1/ai/chat/stream
+ * @desc    Envía un mensaje al AI y obtiene respuesta en streaming
+ * @access  Private
+ */
+router.post('/chat/stream', AIController.sendChatMessageStream);
+
+/**
  * @route   GET /api/v1/ai/history
  * @desc    Obtiene el historial de chat del usuario
  * @access  Private

@@ -85,6 +85,65 @@ export class AIController {
   }
 
   /**
+   * Envía un mensaje al AI con respuesta en streaming
+   */
+  static async sendChatMessageStream(req: Request, res: Response) {
+    try {
+      const userId = req.user?.id;
+      const { message, context } = req.body;
+
+      if (!message) {
+        return res.status(400).json({
+          success: false,
+          message: 'Message is required',
+        });
+      }
+
+      // Set headers for Server-Sent Events
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Headers', 'Cache-Control, Content-Type, Authorization');
+
+      // Keep connection alive
+      const keepAlive = setInterval(() => {
+        res.write(': keep-alive\n\n');
+      }, 15000);
+
+      try {
+        // Stream AI response
+        const stream = AIService.sendChatMessageStream(userId!, message, context);
+
+        for await (const chunk of stream) {
+          res.write(`data: ${chunk}\n\n`);
+        }
+
+        // Send completion signal
+        res.write('data: [DONE]\n\n');
+        res.end();
+      } catch (streamError) {
+        logger.error('Error during streaming:', streamError);
+        res.write(`data: ${JSON.stringify({ content: 'Error occurred during streaming' })}\n\n`);
+        res.write('data: [DONE]\n\n');
+        res.end();
+      } finally {
+        clearInterval(keepAlive);
+      }
+    } catch (error) {
+      logger.error('Error in sendChatMessageStream controller:', error);
+
+      if (!res.headersSent) {
+        res.status(500).json({
+          success: false,
+          message: 'Failed to start AI streaming response',
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+      }
+    }
+  }
+
+  /**
    * Obtiene sugerencias financieras personalizadas
    */
   static async getFinancialSuggestions(req: Request, res: Response) {

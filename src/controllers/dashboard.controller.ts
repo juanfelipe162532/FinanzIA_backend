@@ -36,7 +36,11 @@ export class DashboardController {
       const userId = req.user?.id;
       const { type = 'all', period = 'month' } = req.query;
 
-      const chartData = await DashboardService.getChartData(userId!, type as string, period as string);
+      const chartData = await DashboardService.getChartData(
+        userId!,
+        type as string,
+        period as string
+      );
 
       res.status(200).json({
         success: true,

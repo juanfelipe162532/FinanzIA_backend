@@ -87,7 +87,7 @@ export async function validateCategoryId(categoryId: string): Promise<string> {
 
   throw new Error(
     `ID de categoría inválido: "${categoryId}". ` +
-    'Debe ser un ID de MongoDB válido, un nombre de categoría o un ID numérico del sistema.'
+      'Debe ser un ID de MongoDB válido, un nombre de categoría o un ID numérico del sistema.'
   );
 }
 

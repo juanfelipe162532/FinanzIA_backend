@@ -29,13 +29,19 @@ export class DashboardService {
           previousStartDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       }
 
-      const endDate = period === 'week' ? startDate : 
-                     period === 'month' ? new Date(now.getFullYear(), now.getMonth() + 1, 1) :
-                     new Date(now.getFullYear() + 1, 0, 1);
+      const endDate =
+        period === 'week'
+          ? startDate
+          : period === 'month'
+            ? new Date(now.getFullYear(), now.getMonth() + 1, 1)
+            : new Date(now.getFullYear() + 1, 0, 1);
 
-      const previousEndDate = period === 'week' ? previousStartDate :
-                             period === 'month' ? startDate :
-                             new Date(now.getFullYear(), 0, 1);
+      const previousEndDate =
+        period === 'week'
+          ? previousStartDate
+          : period === 'month'
+            ? startDate
+            : new Date(now.getFullYear(), 0, 1);
 
       // Datos del período actual
       const [currentIncome, currentExpenses, currentTransactionCount] = await Promise.all([
@@ -91,13 +97,15 @@ export class DashboardService {
       const previousExpensesAmount = previousExpenses._sum.amount || 0;
 
       // Calcular cambios porcentuales
-      const incomeChange = previousIncomeAmount > 0 
-        ? ((currentIncomeAmount - previousIncomeAmount) / previousIncomeAmount) * 100 
-        : 0;
+      const incomeChange =
+        previousIncomeAmount > 0
+          ? ((currentIncomeAmount - previousIncomeAmount) / previousIncomeAmount) * 100
+          : 0;
 
-      const expenseChange = previousExpensesAmount > 0 
-        ? ((currentExpensesAmount - previousExpensesAmount) / previousExpensesAmount) * 100 
-        : 0;
+      const expenseChange =
+        previousExpensesAmount > 0
+          ? ((currentExpensesAmount - previousExpensesAmount) / previousExpensesAmount) * 100
+          : 0;
 
       const summary = {
         period,
@@ -163,7 +171,7 @@ export class DashboardService {
         });
 
         const categoriesWithNames = await Promise.all(
-          categoryData.map(async (item) => {
+          categoryData.map(async item => {
             const category = await prisma.category.findUnique({
               where: { id: item.categoryId },
               select: { name: true, color: true, icon: true },
@@ -213,7 +221,7 @@ export class DashboardService {
         });
 
         const budgetComparison = await Promise.all(
-          budgets.map(async (budget) => {
+          budgets.map(async budget => {
             const spent = await prisma.transaction.aggregate({
               where: {
                 userId,

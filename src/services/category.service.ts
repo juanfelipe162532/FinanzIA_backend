@@ -8,10 +8,7 @@ export class CategoryService {
   static async getUserCategories(userId: string, type?: string, includeSystem: boolean = true) {
     try {
       const where: any = {
-        OR: [
-          { userId },
-          ...(includeSystem ? [{ isSystem: true }] : []),
-        ],
+        OR: [{ userId }, ...(includeSystem ? [{ isSystem: true }] : [])],
       };
 
       if (type) {
@@ -30,10 +27,7 @@ export class CategoryService {
             },
           },
         },
-        orderBy: [
-          { isSystem: 'desc' },
-          { name: 'asc' },
-        ],
+        orderBy: [{ isSystem: 'desc' }, { name: 'asc' }],
       });
 
       logger.info(`Retrieved ${categories.length} categories for user ${userId}`);
@@ -81,10 +75,7 @@ export class CategoryService {
       const category = await prisma.category.findFirst({
         where: {
           id,
-          OR: [
-            { userId },
-            { isSystem: true },
-          ],
+          OR: [{ userId }, { isSystem: true }],
         },
         include: {
           parent: true,
@@ -185,7 +176,10 @@ export class CategoryService {
         },
       });
 
-      if (hasRelatedData && (hasRelatedData._count.transactions > 0 || hasRelatedData._count.budgets > 0)) {
+      if (
+        hasRelatedData &&
+        (hasRelatedData._count.transactions > 0 || hasRelatedData._count.budgets > 0)
+      ) {
         throw new Error('Cannot delete category with associated transactions or budgets');
       }
 
