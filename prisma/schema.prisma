@@ -11,19 +11,23 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  email         String    @unique
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  email         String         @unique
   password      String
   firstName     String
   lastName      String
   avatar        String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   transactions  Transaction[]
   budgets       Budget[]
   categories    Category[]
   refreshTokens RefreshToken[]
   chatHistory   AIChatHistory[]
+  accounts      Account[]
+  goals         Goal[]
+  settings      UserSettings?
+  security      UserSecurity?
 }
 
 model RefreshToken {
@@ -39,20 +43,24 @@ model RefreshToken {
 }
 
 model Transaction {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  amount      Float
-  type        String    // 'income' or 'expense'
-  description String
-  date        DateTime  @default(now())
-  categoryId  String?   @db.ObjectId
-  category    Category? @relation(fields: [categoryId], references: [id])
-  userId      String    @db.ObjectId
-  user        User      @relation(fields: [userId], references: [id])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id               String             @id @default(auto()) @map("_id") @db.ObjectId
+  amount           Float
+  type             String             // 'income' or 'expense'
+  description      String
+  date             DateTime           @default(now())
+  categoryId       String?            @db.ObjectId
+  category         Category?          @relation(fields: [categoryId], references: [id])
+  userId           String             @db.ObjectId
+  user             User               @relation(fields: [userId], references: [id])
+  accountId        String?            @db.ObjectId
+  account          Account?           @relation("AccountTransactions", fields: [accountId], references: [id])
+  goalContribution GoalContribution?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
 
   @@index([userId])
   @@index([categoryId])
+  @@index([accountId])
   @@index([date])
 }
 
@@ -105,4 +113,86 @@ model AIChatHistory {
 
   @@index([userId])
   @@index([timestamp])
+}
+
+model Account {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String        @db.ObjectId
+  user         User          @relation(fields: [userId], references: [id])
+  name         String
+  type         String        // 'checking', 'savings', 'credit', 'investment'
+  institution  String?
+  balance      Float         @default(0)
+  currency     String        @default("COP")
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  transactions Transaction[] @relation("AccountTransactions")
+
+  @@index([userId])
+}
+
+model UserSettings {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @unique @db.ObjectId
+  user            User     @relation(fields: [userId], references: [id])
+  currency        String   @default("COP")
+  timezone        String   @default("America/Bogota")
+  language        String   @default("es")
+  dateFormat      String   @default("DD/MM/YYYY")
+  notifications   Json     @default("{\"email\": true, \"push\": true, \"budgetAlerts\": true, \"goalReminders\": true}")
+  theme           String   @default("system") // 'light', 'dark', 'system'
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model UserSecurity {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String    @unique @db.ObjectId
+  user              User      @relation(fields: [userId], references: [id])
+  twoFactorEnabled  Boolean   @default(false)
+  twoFactorSecret   String?
+  backupCodes       String[]
+  loginAttempts     Int       @default(0)
+  lockedUntil       DateTime?
+  lastLoginAt       DateTime?
+  passwordChangedAt DateTime  @default(now())
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model Goal {
+  id            String             @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String             @db.ObjectId
+  user          User               @relation(fields: [userId], references: [id])
+  name          String
+  description   String?
+  targetAmount  Float
+  currentAmount Float              @default(0)
+  targetDate    DateTime?
+  category      String?            // 'savings', 'vacation', 'emergency', 'investment', 'other'
+  status        String             @default("active") // 'active', 'completed', 'paused', 'cancelled'
+  priority      String             @default("medium") // 'high', 'medium', 'low'
+  isPublic      Boolean            @default(false)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  contributions GoalContribution[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model GoalContribution {
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  goalId        String       @db.ObjectId
+  goal          Goal         @relation(fields: [goalId], references: [id])
+  amount        Float
+  date          DateTime     @default(now())
+  description   String?
+  transactionId String?      @unique @db.ObjectId
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
+  createdAt     DateTime     @default(now())
+
+  @@index([goalId])
+  @@index([date])
 }

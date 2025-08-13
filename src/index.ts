@@ -39,6 +39,9 @@ import categoryRoutes from './routes/category.routes';
 import budgetRoutes from './routes/budget.routes';
 import aiRoutes from './routes/ai.routes';
 import dashboardRoutes from './routes/dashboard.routes';
+import accountRoutes from './routes/account.routes';
+import settingsRoutes from './routes/settings.routes';
+import goalRoutes from './routes/goal.routes';
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/data', dataRoutes);
@@ -48,6 +51,9 @@ app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/budgets', budgetRoutes);
 app.use('/api/v1/ai', aiRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
+app.use('/api/v1/accounts', accountRoutes);
+app.use('/api/v1/settings', settingsRoutes);
+app.use('/api/v1/goals', goalRoutes);
 
 // Error handling middleware
 app.use(notFoundHandler);
