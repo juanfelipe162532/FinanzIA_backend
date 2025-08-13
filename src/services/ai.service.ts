@@ -195,6 +195,50 @@ El método **50/30/20** es ideal para principiantes.`;
   }
 
   /**
+   * Generate AI completion for recommendation service
+   */
+  static async generateCompletion(
+    prompt: string,
+    options?: { maxTokens?: number; temperature?: number; systemPrompt?: string }
+  ): Promise<string> {
+    try {
+      const input = {
+        modelId: this.modelId,
+        messages: [
+          {
+            role: ConversationRole.USER,
+            content: [{ text: prompt }],
+          },
+        ],
+        systemPrompts: [
+          {
+            text: options?.systemPrompt || this.genericSystemPrompt,
+          },
+        ],
+        inferenceConfig: {
+          maxTokens: options?.maxTokens || 200,
+          temperature: options?.temperature || 0.7,
+        },
+      };
+
+      const command = new ConverseCommand(input);
+      const response = await this.client.send(command);
+
+      const aiResponse = response.output?.message?.content?.[0]?.text;
+
+      if (aiResponse && aiResponse.trim() !== '') {
+        return aiResponse;
+      } else {
+        logger.warn('No response received from AI model');
+        return 'No se pudo generar una respuesta en este momento.';
+      }
+    } catch (error) {
+      logger.error('Error generating AI completion:', error);
+      return 'Error al procesar la consulta.';
+    }
+  }
+
+  /**
    * Genera sugerencias financieras personalizadas
    */
   static async getFinancialSuggestions(userId: string, type: string = 'general') {
@@ -404,7 +448,7 @@ El método **50/30/20** es ideal para principiantes.`;
     const expensesByCategory = transactions
       .filter((t: any) => t.type === 'expense')
       .reduce((acc: any, t: any) => {
-        const categoryName = t.category.name;
+        const categoryName = t.category?.name || 'Sin categoría';
         acc[categoryName] = (acc[categoryName] || 0) + t.amount;
         return acc;
       }, {});

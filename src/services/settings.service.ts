@@ -124,7 +124,7 @@ export class SettingsService {
       const hashedPassword = await bcrypt.hash(newPassword, 12);
 
       // Actualizar la contraseña y fecha de cambio
-      await prisma.$transaction(async (tx) => {
+      await prisma.$transaction(async tx => {
         await tx.user.update({
           where: { id: userId },
           data: { password: hashedPassword },
@@ -132,7 +132,7 @@ export class SettingsService {
 
         await tx.userSecurity.upsert({
           where: { userId },
-          update: { 
+          update: {
             passwordChangedAt: new Date(),
             loginAttempts: 0, // Reset intentos de login
           },
@@ -201,7 +201,7 @@ export class SettingsService {
     try {
       await prisma.userSecurity.upsert({
         where: { userId },
-        update: { 
+        update: {
           lastLoginAt: new Date(),
           loginAttempts: 0,
           lockedUntil: null,
@@ -226,7 +226,7 @@ export class SettingsService {
     try {
       const security = await prisma.userSecurity.upsert({
         where: { userId },
-        update: { 
+        update: {
           loginAttempts: { increment: 1 },
         },
         create: {
@@ -248,7 +248,9 @@ export class SettingsService {
           data: { lockedUntil: lockUntil },
         });
 
-        logger.warn(`User ${userId} locked until ${lockUntil} due to ${security.loginAttempts} failed attempts`);
+        logger.warn(
+          `User ${userId} locked until ${lockUntil} due to ${security.loginAttempts} failed attempts`
+        );
       }
 
       return security.loginAttempts;
@@ -271,12 +273,12 @@ export class SettingsService {
       if (!security?.lockedUntil) return false;
 
       const isLocked = security.lockedUntil > new Date();
-      
+
       // Si ya no está bloqueado, limpiar el campo
       if (!isLocked) {
         await prisma.userSecurity.update({
           where: { userId },
-          data: { 
+          data: {
             lockedUntil: null,
             loginAttempts: 0,
           },

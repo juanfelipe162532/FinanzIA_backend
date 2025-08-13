@@ -73,7 +73,10 @@ export class AuthService {
     // Verificar si el usuario está bloqueado
     const isLocked = await SettingsService.isUserLocked(user.id);
     if (isLocked) {
-      throw new AppError('Account is temporarily locked. Please try again later.', StatusCodes.LOCKED);
+      throw new AppError(
+        'Account is temporarily locked. Please try again later.',
+        StatusCodes.LOCKED
+      );
     }
 
     // Check password

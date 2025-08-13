@@ -13,7 +13,11 @@ router.put('/', SettingsController.validateUpdateSettings, SettingsController.up
 
 // Rutas de seguridad
 router.get('/security', SettingsController.getUserSecurity);
-router.put('/security/password', SettingsController.validatePasswordChange, SettingsController.updatePassword);
+router.put(
+  '/security/password',
+  SettingsController.validatePasswordChange,
+  SettingsController.updatePassword
+);
 router.put('/security/2fa', SettingsController.toggle2FA);
 router.get('/security/locked', SettingsController.checkUserLocked);
 

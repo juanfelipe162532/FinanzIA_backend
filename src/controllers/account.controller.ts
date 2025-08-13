@@ -8,11 +8,23 @@ export class AccountController {
    * Validaciones para crear cuenta
    */
   static validateCreateAccount = [
-    body('name').trim().isLength({ min: 1, max: 100 }).withMessage('Name is required and must be less than 100 characters'),
-    body('type').isIn(['checking', 'savings', 'credit', 'investment']).withMessage('Invalid account type'),
-    body('institution').optional().trim().isLength({ max: 100 }).withMessage('Institution must be less than 100 characters'),
+    body('name')
+      .trim()
+      .isLength({ min: 1, max: 100 })
+      .withMessage('Name is required and must be less than 100 characters'),
+    body('type')
+      .isIn(['checking', 'savings', 'credit', 'investment'])
+      .withMessage('Invalid account type'),
+    body('institution')
+      .optional()
+      .trim()
+      .isLength({ max: 100 })
+      .withMessage('Institution must be less than 100 characters'),
     body('balance').optional().isFloat({ min: 0 }).withMessage('Balance must be a positive number'),
-    body('currency').optional().isLength({ min: 3, max: 3 }).withMessage('Currency must be 3 characters'),
+    body('currency')
+      .optional()
+      .isLength({ min: 3, max: 3 })
+      .withMessage('Currency must be 3 characters'),
     body('isActive').optional().isBoolean().withMessage('IsActive must be a boolean'),
   ];
 
@@ -21,11 +33,25 @@ export class AccountController {
    */
   static validateUpdateAccount = [
     param('id').isMongoId().withMessage('Invalid account ID'),
-    body('name').optional().trim().isLength({ min: 1, max: 100 }).withMessage('Name must be less than 100 characters'),
-    body('type').optional().isIn(['checking', 'savings', 'credit', 'investment']).withMessage('Invalid account type'),
-    body('institution').optional().trim().isLength({ max: 100 }).withMessage('Institution must be less than 100 characters'),
+    body('name')
+      .optional()
+      .trim()
+      .isLength({ min: 1, max: 100 })
+      .withMessage('Name must be less than 100 characters'),
+    body('type')
+      .optional()
+      .isIn(['checking', 'savings', 'credit', 'investment'])
+      .withMessage('Invalid account type'),
+    body('institution')
+      .optional()
+      .trim()
+      .isLength({ max: 100 })
+      .withMessage('Institution must be less than 100 characters'),
     body('balance').optional().isFloat({ min: 0 }).withMessage('Balance must be a positive number'),
-    body('currency').optional().isLength({ min: 3, max: 3 }).withMessage('Currency must be 3 characters'),
+    body('currency')
+      .optional()
+      .isLength({ min: 3, max: 3 })
+      .withMessage('Currency must be 3 characters'),
     body('isActive').optional().isBoolean().withMessage('IsActive must be a boolean'),
   ];
 

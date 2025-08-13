@@ -95,8 +95,12 @@ export class GoalService {
         ...goal,
         progress: goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0,
         remainingAmount: goal.targetAmount - goal.currentAmount,
-        daysRemaining: goal.targetDate ? Math.ceil((goal.targetDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null,
-        isOverdue: goal.targetDate ? goal.targetDate < new Date() && goal.status !== 'completed' : false,
+        daysRemaining: goal.targetDate
+          ? Math.ceil((goal.targetDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+          : null,
+        isOverdue: goal.targetDate
+          ? goal.targetDate < new Date() && goal.status !== 'completed'
+          : false,
       }));
 
       logger.info(`Retrieved ${goals.length} goals for user: ${userId}`);
@@ -113,7 +117,7 @@ export class GoalService {
   static async getGoalById(id: string, userId: string) {
     try {
       const goal = await prisma.goal.findFirst({
-        where: { 
+        where: {
           id,
           userId,
         },
@@ -163,9 +167,14 @@ export class GoalService {
         ...goal,
         progress: goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0,
         remainingAmount: goal.targetAmount - goal.currentAmount,
-        daysRemaining: goal.targetDate ? Math.ceil((goal.targetDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null,
-        isOverdue: goal.targetDate ? goal.targetDate < new Date() && goal.status !== 'completed' : false,
-        averageContribution: goal._count.contributions > 0 ? goal.currentAmount / goal._count.contributions : 0,
+        daysRemaining: goal.targetDate
+          ? Math.ceil((goal.targetDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+          : null,
+        isOverdue: goal.targetDate
+          ? goal.targetDate < new Date() && goal.status !== 'completed'
+          : false,
+        averageContribution:
+          goal._count.contributions > 0 ? goal.currentAmount / goal._count.contributions : 0,
       };
 
       logger.info(`Retrieved goal with ID: ${id} for user: ${userId}`);
@@ -182,7 +191,7 @@ export class GoalService {
   static async updateGoal(id: string, userId: string, updateData: any) {
     try {
       const goal = await prisma.goal.update({
-        where: { 
+        where: {
           id,
           userId,
         },
@@ -234,7 +243,7 @@ export class GoalService {
     try {
       // Verificar si la meta tiene contribuciones
       const goalWithContributions = await prisma.goal.findFirst({
-        where: { 
+        where: {
           id,
           userId,
         },
@@ -257,7 +266,9 @@ export class GoalService {
           where: { id },
           data: { status: 'cancelled' },
         });
-        logger.info(`Cancelled goal with ID: ${id} (has ${goalWithContributions._count.contributions} contributions)`);
+        logger.info(
+          `Cancelled goal with ID: ${id} (has ${goalWithContributions._count.contributions} contributions)`
+        );
         return { message: 'Goal cancelled due to existing contributions' };
       } else {
         // Eliminar si no tiene contribuciones
@@ -276,12 +287,17 @@ export class GoalService {
   /**
    * Agrega una contribución a una meta
    */
-  static async addContribution(goalId: string, userId: string, contributionData: any, transactionId?: string) {
+  static async addContribution(
+    goalId: string,
+    userId: string,
+    contributionData: any,
+    transactionId?: string
+  ) {
     try {
-      const contribution = await prisma.$transaction(async (tx) => {
+      const contribution = await prisma.$transaction(async tx => {
         // Verificar que la meta existe y pertenece al usuario
         const goal = await tx.goal.findFirst({
-          where: { 
+          where: {
             id: goalId,
             userId,
           },
@@ -313,7 +329,10 @@ export class GoalService {
         });
 
         // Si se alcanzó la meta, marcarla como completada
-        if (updatedGoal.currentAmount >= updatedGoal.targetAmount && updatedGoal.status === 'active') {
+        if (
+          updatedGoal.currentAmount >= updatedGoal.targetAmount &&
+          updatedGoal.status === 'active'
+        ) {
           await tx.goal.update({
             where: { id: goalId },
             data: { status: 'completed' },
@@ -334,11 +353,16 @@ export class GoalService {
   /**
    * Obtiene las contribuciones de una meta
    */
-  static async getGoalContributions(goalId: string, userId: string, page: number = 1, limit: number = 20) {
+  static async getGoalContributions(
+    goalId: string,
+    userId: string,
+    page: number = 1,
+    limit: number = 20
+  ) {
     try {
       // Verificar que la meta pertenece al usuario
       const goal = await prisma.goal.findFirst({
-        where: { 
+        where: {
           id: goalId,
           userId,
         },
@@ -421,14 +445,20 @@ export class GoalService {
         totalTargetAmount: goals.reduce((sum, goal) => sum + goal.targetAmount, 0),
         totalCurrentAmount: goals.reduce((sum, goal) => sum + goal.currentAmount, 0),
         overallProgress: 0,
-        goalsByCategory: goals.reduce((acc, goal) => {
-          acc[goal.category || 'other'] = (acc[goal.category || 'other'] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>),
-        goalsByStatus: goals.reduce((acc, goal) => {
-          acc[goal.status] = (acc[goal.status] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>),
+        goalsByCategory: goals.reduce(
+          (acc, goal) => {
+            acc[goal.category || 'other'] = (acc[goal.category || 'other'] || 0) + 1;
+            return acc;
+          },
+          {} as Record<string, number>
+        ),
+        goalsByStatus: goals.reduce(
+          (acc, goal) => {
+            acc[goal.status] = (acc[goal.status] || 0) + 1;
+            return acc;
+          },
+          {} as Record<string, number>
+        ),
         upcomingDeadlines: goals
           .filter(g => g.targetDate && g.targetDate > new Date() && g.status === 'active')
           .sort((a, b) => a.targetDate!.getTime() - b.targetDate!.getTime())
@@ -437,7 +467,9 @@ export class GoalService {
             id: g.id,
             name: g.name,
             targetDate: g.targetDate,
-            daysRemaining: Math.ceil((g.targetDate!.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)),
+            daysRemaining: Math.ceil(
+              (g.targetDate!.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+            ),
             progress: g.targetAmount > 0 ? (g.currentAmount / g.targetAmount) * 100 : 0,
           })),
       };
@@ -495,13 +527,15 @@ export class GoalService {
       }
 
       // Calcular ingresos y gastos promedio mensuales
-      const monthlyIncome = userData.transactions
-        .filter(t => t.type === 'income')
-        .reduce((sum, t) => sum + t.amount, 0) / 12;
-      
-      const monthlyExpenses = userData.transactions
-        .filter(t => t.type === 'expense')
-        .reduce((sum, t) => sum + t.amount, 0) / 12;
+      const monthlyIncome =
+        userData.transactions
+          .filter(t => t.type === 'income')
+          .reduce((sum, t) => sum + t.amount, 0) / 12;
+
+      const monthlyExpenses =
+        userData.transactions
+          .filter(t => t.type === 'expense')
+          .reduce((sum, t) => sum + t.amount, 0) / 12;
 
       const monthlySavings = monthlyIncome - monthlyExpenses;
 

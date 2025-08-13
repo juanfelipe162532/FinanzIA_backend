@@ -8,11 +8,20 @@ export class SettingsController {
    * Validaciones para actualizar configuración
    */
   static validateUpdateSettings = [
-    body('currency').optional().isLength({ min: 3, max: 3 }).withMessage('Currency must be 3 characters'),
+    body('currency')
+      .optional()
+      .isLength({ min: 3, max: 3 })
+      .withMessage('Currency must be 3 characters'),
     body('timezone').optional().trim().notEmpty().withMessage('Timezone cannot be empty'),
     body('language').optional().isIn(['es', 'en']).withMessage('Language must be es or en'),
-    body('dateFormat').optional().isIn(['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD']).withMessage('Invalid date format'),
-    body('theme').optional().isIn(['light', 'dark', 'system']).withMessage('Theme must be light, dark, or system'),
+    body('dateFormat')
+      .optional()
+      .isIn(['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD'])
+      .withMessage('Invalid date format'),
+    body('theme')
+      .optional()
+      .isIn(['light', 'dark', 'system'])
+      .withMessage('Theme must be light, dark, or system'),
     body('notifications').optional().isObject().withMessage('Notifications must be an object'),
   ];
 
@@ -21,7 +30,9 @@ export class SettingsController {
    */
   static validatePasswordChange = [
     body('currentPassword').notEmpty().withMessage('Current password is required'),
-    body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters long'),
+    body('newPassword')
+      .isLength({ min: 6 })
+      .withMessage('New password must be at least 6 characters long'),
   ];
 
   /**
@@ -159,7 +170,7 @@ export class SettingsController {
       });
     } catch (error) {
       logger.error('Error in updatePassword controller:', error);
-      
+
       // Manejar errores específicos
       if (error instanceof Error && error.message === 'Current password is incorrect') {
         return res.status(400).json({
@@ -240,7 +251,10 @@ export class SettingsController {
 
       // Configurar headers para descarga
       res.setHeader('Content-Type', 'application/json');
-      res.setHeader('Content-Disposition', `attachment; filename="finanza_ia_data_${userId}_${new Date().toISOString().split('T')[0]}.json"`);
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="finanza_ia_data_${userId}_${new Date().toISOString().split('T')[0]}.json"`
+      );
 
       res.status(200).json({
         success: true,

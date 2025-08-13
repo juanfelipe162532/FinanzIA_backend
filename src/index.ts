@@ -42,6 +42,7 @@ import dashboardRoutes from './routes/dashboard.routes';
 import accountRoutes from './routes/account.routes';
 import settingsRoutes from './routes/settings.routes';
 import goalRoutes from './routes/goal.routes';
+import recommendationRoutes from './routes/recommendation.routes';
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/data', dataRoutes);
@@ -54,6 +55,7 @@ app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1/accounts', accountRoutes);
 app.use('/api/v1/settings', settingsRoutes);
 app.use('/api/v1/goals', goalRoutes);
+app.use('/api/v1/recommendations', recommendationRoutes);
 
 // Error handling middleware
 app.use(notFoundHandler);

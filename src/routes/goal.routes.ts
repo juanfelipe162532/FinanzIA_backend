@@ -17,7 +17,11 @@ router.put('/:id', GoalController.validateUpdateGoal, GoalController.updateGoal)
 router.delete('/:id', GoalController.deleteGoal);
 
 // Rutas de contribuciones
-router.post('/:id/contributions', GoalController.validateAddContribution, GoalController.addContribution);
+router.post(
+  '/:id/contributions',
+  GoalController.validateAddContribution,
+  GoalController.addContribution
+);
 router.get('/:id/contributions', GoalController.getGoalContributions);
 
 export default router;

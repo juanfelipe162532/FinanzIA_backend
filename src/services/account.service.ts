@@ -75,7 +75,7 @@ export class AccountService {
   static async getAccountById(id: string, userId: string) {
     try {
       const account = await prisma.account.findFirst({
-        where: { 
+        where: {
           id,
           userId,
         },
@@ -130,7 +130,7 @@ export class AccountService {
   static async updateAccount(id: string, userId: string, updateData: any) {
     try {
       const account = await prisma.account.update({
-        where: { 
+        where: {
           id,
           userId,
         },
@@ -166,7 +166,7 @@ export class AccountService {
     try {
       // Verificar si la cuenta tiene transacciones
       const accountWithTransactions = await prisma.account.findFirst({
-        where: { 
+        where: {
           id,
           userId,
         },
@@ -189,7 +189,9 @@ export class AccountService {
           where: { id },
           data: { isActive: false },
         });
-        logger.info(`Deactivated account with ID: ${id} (has ${accountWithTransactions._count.transactions} transactions)`);
+        logger.info(
+          `Deactivated account with ID: ${id} (has ${accountWithTransactions._count.transactions} transactions)`
+        );
         return { message: 'Account deactivated due to existing transactions' };
       } else {
         // Eliminar si no tiene transacciones
@@ -211,7 +213,7 @@ export class AccountService {
   static async updateAccountBalance(id: string, userId: string, newBalance: number) {
     try {
       const account = await prisma.account.update({
-        where: { 
+        where: {
           id,
           userId,
         },
@@ -241,7 +243,7 @@ export class AccountService {
   static async getAccountsSummary(userId: string) {
     try {
       const accounts = await prisma.account.findMany({
-        where: { 
+        where: {
           userId,
           isActive: true,
         },
@@ -257,14 +259,20 @@ export class AccountService {
       const summary = {
         totalAccounts: accounts.length,
         totalBalance: accounts.reduce((sum, account) => sum + account.balance, 0),
-        accountsByType: accounts.reduce((acc, account) => {
-          acc[account.type] = (acc[account.type] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>),
-        balanceByType: accounts.reduce((acc, account) => {
-          acc[account.type] = (acc[account.type] || 0) + account.balance;
-          return acc;
-        }, {} as Record<string, number>),
+        accountsByType: accounts.reduce(
+          (acc, account) => {
+            acc[account.type] = (acc[account.type] || 0) + 1;
+            return acc;
+          },
+          {} as Record<string, number>
+        ),
+        balanceByType: accounts.reduce(
+          (acc, account) => {
+            acc[account.type] = (acc[account.type] || 0) + account.balance;
+            return acc;
+          },
+          {} as Record<string, number>
+        ),
         accounts,
       };
 
@@ -295,8 +303,8 @@ export class AccountService {
 
       // Calcular el balance
       const calculatedBalance = transactions.reduce((balance, transaction) => {
-        return transaction.type === 'income' 
-          ? balance + transaction.amount 
+        return transaction.type === 'income'
+          ? balance + transaction.amount
           : balance - transaction.amount;
       }, 0);
 

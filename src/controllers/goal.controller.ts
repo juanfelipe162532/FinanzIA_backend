@@ -8,13 +8,29 @@ export class GoalController {
    * Validaciones para crear meta
    */
   static validateCreateGoal = [
-    body('name').trim().isLength({ min: 1, max: 100 }).withMessage('Name is required and must be less than 100 characters'),
-    body('description').optional().trim().isLength({ max: 500 }).withMessage('Description must be less than 500 characters'),
+    body('name')
+      .trim()
+      .isLength({ min: 1, max: 100 })
+      .withMessage('Name is required and must be less than 100 characters'),
+    body('description')
+      .optional()
+      .trim()
+      .isLength({ max: 500 })
+      .withMessage('Description must be less than 500 characters'),
     body('targetAmount').isFloat({ gt: 0 }).withMessage('Target amount must be greater than 0'),
-    body('currentAmount').optional().isFloat({ min: 0 }).withMessage('Current amount must be 0 or greater'),
+    body('currentAmount')
+      .optional()
+      .isFloat({ min: 0 })
+      .withMessage('Current amount must be 0 or greater'),
     body('targetDate').optional().isISO8601().withMessage('Target date must be a valid date'),
-    body('category').optional().isIn(['savings', 'vacation', 'emergency', 'investment', 'other']).withMessage('Invalid category'),
-    body('priority').optional().isIn(['high', 'medium', 'low']).withMessage('Priority must be high, medium, or low'),
+    body('category')
+      .optional()
+      .isIn(['savings', 'vacation', 'emergency', 'investment', 'other'])
+      .withMessage('Invalid category'),
+    body('priority')
+      .optional()
+      .isIn(['high', 'medium', 'low'])
+      .withMessage('Priority must be high, medium, or low'),
     body('isPublic').optional().isBoolean().withMessage('IsPublic must be a boolean'),
   ];
 
@@ -23,13 +39,33 @@ export class GoalController {
    */
   static validateUpdateGoal = [
     param('id').isMongoId().withMessage('Invalid goal ID'),
-    body('name').optional().trim().isLength({ min: 1, max: 100 }).withMessage('Name must be less than 100 characters'),
-    body('description').optional().trim().isLength({ max: 500 }).withMessage('Description must be less than 500 characters'),
-    body('targetAmount').optional().isFloat({ gt: 0 }).withMessage('Target amount must be greater than 0'),
+    body('name')
+      .optional()
+      .trim()
+      .isLength({ min: 1, max: 100 })
+      .withMessage('Name must be less than 100 characters'),
+    body('description')
+      .optional()
+      .trim()
+      .isLength({ max: 500 })
+      .withMessage('Description must be less than 500 characters'),
+    body('targetAmount')
+      .optional()
+      .isFloat({ gt: 0 })
+      .withMessage('Target amount must be greater than 0'),
     body('targetDate').optional().isISO8601().withMessage('Target date must be a valid date'),
-    body('category').optional().isIn(['savings', 'vacation', 'emergency', 'investment', 'other']).withMessage('Invalid category'),
-    body('status').optional().isIn(['active', 'completed', 'paused', 'cancelled']).withMessage('Invalid status'),
-    body('priority').optional().isIn(['high', 'medium', 'low']).withMessage('Priority must be high, medium, or low'),
+    body('category')
+      .optional()
+      .isIn(['savings', 'vacation', 'emergency', 'investment', 'other'])
+      .withMessage('Invalid category'),
+    body('status')
+      .optional()
+      .isIn(['active', 'completed', 'paused', 'cancelled'])
+      .withMessage('Invalid status'),
+    body('priority')
+      .optional()
+      .isIn(['high', 'medium', 'low'])
+      .withMessage('Priority must be high, medium, or low'),
     body('isPublic').optional().isBoolean().withMessage('IsPublic must be a boolean'),
   ];
 
@@ -40,7 +76,11 @@ export class GoalController {
     param('id').isMongoId().withMessage('Invalid goal ID'),
     body('amount').isFloat({ gt: 0 }).withMessage('Amount must be greater than 0'),
     body('date').optional().isISO8601().withMessage('Date must be a valid date'),
-    body('description').optional().trim().isLength({ max: 200 }).withMessage('Description must be less than 200 characters'),
+    body('description')
+      .optional()
+      .trim()
+      .isLength({ max: 200 })
+      .withMessage('Description must be less than 200 characters'),
   ];
 
   /**
