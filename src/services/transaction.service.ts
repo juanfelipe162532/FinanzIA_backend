@@ -102,7 +102,7 @@ export class TransactionService {
           type: transactionData.type,
           description: transactionData.description,
           date: transactionData.date ? new Date(transactionData.date) : new Date(),
-          categoryId: transactionData.categoryId,
+          ...(transactionData.categoryId && { categoryId: transactionData.categoryId }),
           userId: transactionData.userId,
         },
         include: {
@@ -163,7 +163,7 @@ export class TransactionService {
           type: updateData.type,
           description: updateData.description,
           date: updateData.date ? new Date(updateData.date) : undefined,
-          categoryId: updateData.categoryId,
+          ...(updateData.categoryId !== undefined && { categoryId: updateData.categoryId }),
         },
         include: {
           category: true,

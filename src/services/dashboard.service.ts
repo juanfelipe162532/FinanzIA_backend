@@ -172,13 +172,16 @@ export class DashboardService {
 
         const categoriesWithNames = await Promise.all(
           categoryData.map(async item => {
-            const category = await prisma.category.findUnique({
-              where: { id: item.categoryId },
-              select: { name: true, color: true, icon: true },
-            });
+            let category = null;
+            if (item.categoryId) {
+              category = await prisma.category.findUnique({
+                where: { id: item.categoryId },
+                select: { name: true, color: true, icon: true },
+              });
+            }
             return {
               ...item,
-              categoryName: category?.name || 'Unknown',
+              categoryName: category?.name || 'Sin categoría',
               categoryColor: category?.color,
               categoryIcon: category?.icon,
             };
@@ -387,12 +390,12 @@ export class DashboardService {
       });
 
       let topCategoryName = 'N/A';
-      if (topExpenseCategory.length > 0) {
+      if (topExpenseCategory.length > 0 && topExpenseCategory[0].categoryId) {
         const category = await prisma.category.findUnique({
           where: { id: topExpenseCategory[0].categoryId },
           select: { name: true },
         });
-        topCategoryName = category?.name || 'Unknown';
+        topCategoryName = category?.name || 'Sin categoría';
       }
 
       const metrics = {
