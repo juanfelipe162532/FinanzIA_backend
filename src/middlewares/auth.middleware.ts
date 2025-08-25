@@ -8,6 +8,7 @@ import { AppError } from './error.middleware';
 declare module 'express' {
   interface Request {
     user?: {
+      id: string;
       userId: string;
       email: string;
     };
@@ -46,6 +47,7 @@ export const protect = (req: Request, res: Response, next: NextFunction) => {
 
       // Add user to request
       req.user = {
+        id: decoded.userId,
         userId: decoded.userId,
         email: decoded.email,
       };
