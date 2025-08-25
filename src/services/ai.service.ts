@@ -9,10 +9,10 @@ import {
 
 export class AIService {
   private static client = new BedrockRuntimeClient({
-    region: 'us-east-1',
+    region: process.env.AWS_REGION || 'us-east-1',
     credentials: {
-      accessKeyId: 'AKIAXFEZEY7QFP5DQT75',
-      secretAccessKey: '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',
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
     },
   });
 
