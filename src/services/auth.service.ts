@@ -12,6 +12,7 @@ import {
   RegisterRequest,
 } from '../models/auth.model';
 import { logger } from '../utils/logger';
+import { SettingsService } from './settings.service';
 
 export class AuthService {
   /**
@@ -69,11 +70,25 @@ export class AuthService {
       throw new AppError('Invalid credentials', StatusCodes.UNAUTHORIZED);
     }
 
+    // Verificar si el usuario está bloqueado
+    const isLocked = await SettingsService.isUserLocked(user.id);
+    if (isLocked) {
+      throw new AppError(
+        'Account is temporarily locked. Please try again later.',
+        StatusCodes.LOCKED
+      );
+    }
+
     // Check password
     const isPasswordValid = await bcrypt.compare(loginData.password, user.password);
     if (!isPasswordValid) {
+      // Incrementar intentos de login fallidos
+      await SettingsService.incrementLoginAttempts(user.id);
       throw new AppError('Invalid credentials', StatusCodes.UNAUTHORIZED);
     }
+
+    // Actualizar último login exitoso
+    await SettingsService.updateLastLogin(user.id);
 
     // Generate tokens
     const tokens = await this.generateTokens(user.id, user.email);
