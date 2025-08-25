@@ -111,35 +111,6 @@ classDiagram
 
 ---
 
-## 🚀 Inicio Rápido (Dev)
-
-```bash
-# 1) Clonar
-git clone https://github.com/juanfelipe162532/FinanzIA_backend.git
-cd FinanzIA_backend
-
-# 2) Instalar dependencias
-npm install
-# o
-# yarn
-
-# 3) Variables de entorno
-cp .env.example .env
-# Edita .env con tu configuración
-
-# 4) Base de datos
-# Ajusta DATABASE_URL en .env (PostgreSQL)
-npx prisma migrate dev --name init
-# (Opcional) datos de ejemplo
-npx prisma db seed
-
-# 5) Levantar en desarrollo
-npm run dev
-# Servirá en http://localhost:3000
-```
-
----
-
 ## ⚙️ Variables de entorno
 
 Ejemplo de variables esperadas (ajusta a tu `.env.example`):
@@ -155,8 +126,6 @@ NODE_ENV=development
 ---
 
 ## 🧪 Scripts útiles
-
-> Verifica/ajusta con `package.json` del proyecto.
 
 * `npm run dev` — levantar servidor con hot-reload
 * `npm run build` — compilar a producción
@@ -197,8 +166,6 @@ curl -X POST http://localhost:3000/api/transactions \
 * **JWT** con expiración configurable
 * **Validaciones** de entrada a nivel DTO/route
 
-> Recomendado: habilitar **rotación de JWT**, **CSRF** si hay cookies, y **secrets** en variables seguras.
-
 ---
 
 ## 🧩 Estructura del proyecto (referencial)
@@ -238,68 +205,10 @@ sequenceDiagram
 
 ---
 
-## 🐳 Despliegue con Docker (opcional)
-
-> Si aún no existe un `Dockerfile`, puedes usar este ejemplo mínimo:
-
-```Dockerfile
-FROM node:18-alpine AS deps
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-
-FROM node:18-alpine AS builder
-WORKDIR /app
-COPY . .
-RUN npm ci && npm run build
-
-FROM node:18-alpine
-WORKDIR /app
-ENV NODE_ENV=production
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package*.json ./
-EXPOSE 3000
-CMD ["node","dist/index.js"]
-```
-
-**docker-compose.yml** (Postgres incluido):
-
-```yaml
-version: '3.9'
-services:
-  db:
-    image: postgres:16
-    environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_DB: finanzia
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-  api:
-    build: .
-    environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/finanzia
-      PORT: 3000
-      JWT_SECRET: change-me
-    depends_on:
-      - db
-    ports:
-      - "3000:3000"
-volumes:
-  pgdata:
-```
-
----
-
 ## ✅ Healthcheck / Status
 
 * `GET /health` → `{ status: "ok", uptime, version }`
 * `GET /metrics` (si se integra Prometheus) → métricas para dashboards
-
-> Sugerencia: añade un **endpoint de status** y un **/metrics** con `prom-client`.
 
 ---
 
@@ -315,15 +224,6 @@ volumes:
 ## 🛡️ Licencia
 
 Este proyecto usa licencia **MIT**. Consulta [`LICENSE`](./LICENSE) para más detalles.
-
----
-
-## 🤝 Contribuir
-
-1. Haz fork del repo
-2. Crea rama `feature/mi-feature`
-3. Commits claros (`feat:`, `fix:`, etc.)
-4. PR con descripción, pasos de prueba y screenshots si aplica
 
 ---
 
