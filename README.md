@@ -1,144 +1,343 @@
-# FinanzIA Backend
+# FinanzIA — Backend (Node.js + TypeScript)
 
-A Node.js/TypeScript backend for the FinanzIA financial management application, powered by AI insights.
+![Last commit](https://img.shields.io/github/last-commit/juanfelipe162532/FinanzIA_backend?label=last%20commit)
+![Issues](https://img.shields.io/github/issues/juanfelipe162532/FinanzIA_backend)
+![License](https://img.shields.io/github/license/juanfelipe162532/FinanzIA_backend)
+![Node](https://img.shields.io/github/package-json/node/juanfelipe162532/FinanzIA_backend/dev?label=node)
+![Repo size](https://img.shields.io/github/repo-size/juanfelipe162532/FinanzIA_backend)
+![TypeScript](https://img.shields.io/badge/TypeScript-Project-blue)
 
-## Features
+> Backend de **FinanzIA**, una API REST para gestión financiera personal/empresarial con integración de IA para insights, construída con **Node.js**, **Express**, **TypeScript** y **Prisma** sobre **PostgreSQL**.
 
-- 🚀 **RESTful API** with Express.js
-- 🔐 **Authentication** using JWT
-- 🗄 **Database** with Prisma ORM (PostgreSQL)
-- 🤖 **AI Integration** for financial insights
-- 📊 **Transaction Management**
-- 📈 **Budget Tracking**
-- 📱 **CORS** enabled for frontend integration
-- 📝 **Logging** with Winston
-- ✅ **Input Validation** with express-validator
-- 🛡 **Security** best practices (helmet, rate limiting, etc.)
-- 🔄 **TypeScript** for type safety
+---
 
-## Prerequisites
+## ✨ Características
 
-- Node.js (v18 or higher)
-- PostgreSQL (v12 or higher)
-- npm or yarn
+* API REST modular (Express + Routers)
+* Capa de servicios con **Prisma ORM** (PostgreSQL)
+* Autenticación con **JWT** + middlewares de autorización
+* Validaciones con **express-validator**
+* Seguridad base: **helmet**, CORS, rate limit
+* Logs con **Winston**
+* Tipado estricto con **TypeScript** y ESLint + Prettier
+* Documentación con **OpenAPI/Swagger** (`/api-docs`)
+* Scripts de desarrollo, build y despliegue
 
-## Getting Started
+---
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/finanzia-backend.git
-   cd finanzia-backend
-   ```
+## 🧭 Arquitectura (alto nivel)
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   # or
-   yarn
-   ```
-
-3. **Set up environment variables**
-   - Copy `.env.example` to `.env`
-   - Update the environment variables in `.env` with your configuration
-
-4. **Set up the database**
-   - Make sure PostgreSQL is running
-   - Update the `DATABASE_URL` in `.env` with your database connection string
-   - Run database migrations:
-     ```bash
-     npx prisma migrate dev --name init
-     ```
-   - (Optional) Seed the database with initial data:
-     ```bash
-     npx prisma db seed
-     ```
-
-5. **Start the development server**
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-
-   The server will be available at `http://localhost:3000`
-
-## Project Structure
-
-```
-├── src/
-│   ├── config/          # Configuration files
-│   ├── controllers/     # Route controllers
-│   ├── middlewares/     # Custom express middlewares
-│   ├── models/          # Database models (Prisma)
-│   ├── routes/          # API routes
-│   ├── services/        # Business logic
-│   ├── utils/           # Utility classes and functions
-│   └── index.ts         # App entry point
-├── prisma/             # Prisma schema and migrations
-├── .env                # Environment variables
-├── package.json        # Project metadata and dependencies
-└── tsconfig.json      # TypeScript configuration
+```mermaid
+flowchart LR
+  Client[Frontend / Scripts / Postman]
+  Client -->|HTTP JSON| API[Express API]
+  API --> MW[Middlewares]
+  MW --> C[Controladores]
+  C --> S[Servicios]
+  S --> DB[(PostgreSQL via Prisma)]
+  S --> AI[(IA / Insight Providers)]
+  subgraph Observability
+    L[Winston Logs]
+  end
+  API --> L
 ```
 
-## Available Scripts
+---
 
-- `npm run dev` - Start the development server with hot-reload
-- `npm run build` - Build the application for production
-- `npm start` - Start the production server
-- `npm run lint` - Run ESLint
-- `npm run format` - Format code with Prettier
-- `npm test` - Run tests
-- `npx prisma studio` - Open Prisma Studio to view and edit the database
+## 🗃️ Modelado (referencial)
 
-## Environment Variables
+> Ajusta si tu `schema.prisma` difiere.
 
-See `.env.example` for all available environment variables.
+```mermaid
+classDiagram
+  class User {
+    id: String
+    email: String
+    passwordHash: String
+    createdAt: DateTime
+  }
+  class Account {
+    id: String
+    userId: String
+    name: String
+    type: String
+    createdAt: DateTime
+  }
+  class Category {
+    id: String
+    name: String
+    type: "INCOME|EXPENSE"
+  }
+  class Transaction {
+    id: String
+    accountId: String
+    categoryId: String
+    amount: Decimal
+    date: DateTime
+    notes: String
+  }
+  class Budget {
+    id: String
+    userId: String
+    categoryId: String
+    limit: Decimal
+    period: String
+  }
+  User <o-- Account
+  Account <o-- Transaction
+  Category <o-- Transaction
+  User <o-- Budget
+  Category <o-- Budget
+```
 
-## API Documentation
+---
 
-API documentation is available at `/api-docs` when running in development mode.
+## 📈 Indicadores rápidos (dinámicos)
 
-## Testing
+* **Tamaño del repo**: ![Repo size](https://img.shields.io/github/repo-size/juanfelipe162532/FinanzIA_backend)
+* **Último commit**: ![Last commit](https://img.shields.io/github/last-commit/juanfelipe162532/FinanzIA_backend?label=fecha)
+* **Issues abiertas**: ![Issues](https://img.shields.io/github/issues/juanfelipe162532/FinanzIA_backend)
+* **Versión de Node declarada**: ![Node](https://img.shields.io/github/package-json/node/juanfelipe162532/FinanzIA_backend/dev?label=node)
+
+> Estos “gráficos” (badges) se refrescan automáticamente en GitHub. Para dashboards más avanzados, se sugiere integrar **Shield.io JSON endpoints** o **GH Actions** que publiquen métricas.
+
+---
+
+## 📦 Requisitos
+
+* Node.js >= 18
+* PostgreSQL >= 12
+* npm o yarn
+
+---
+
+## 🚀 Inicio Rápido (Dev)
 
 ```bash
-# Run tests
-npm test
+# 1) Clonar
+git clone https://github.com/juanfelipe162532/FinanzIA_backend.git
+cd FinanzIA_backend
 
-# Run tests in watch mode
-npm test:watch
+# 2) Instalar dependencias
+npm install
+# o
+# yarn
 
-# Run tests with coverage
-npm run test:coverage
+# 3) Variables de entorno
+cp .env.example .env
+# Edita .env con tu configuración
+
+# 4) Base de datos
+# Ajusta DATABASE_URL en .env (PostgreSQL)
+npx prisma migrate dev --name init
+# (Opcional) datos de ejemplo
+npx prisma db seed
+
+# 5) Levantar en desarrollo
+npm run dev
+# Servirá en http://localhost:3000
 ```
 
-## Deployment
+---
 
-1. Build the application:
-   ```bash
-   npm run build
-   ```
+## ⚙️ Variables de entorno
 
-2. Start the production server:
-   ```bash
-   npm start
-   ```
+Ejemplo de variables esperadas (ajusta a tu `.env.example`):
 
-## Contributing
+```
+DATABASE_URL=postgresql://user:pass@localhost:5432/finanzia
+PORT=3000
+JWT_SECRET=supersecret
+CORS_ORIGIN=http://localhost:5173
+NODE_ENV=development
+```
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+---
 
-## License
+## 🧪 Scripts útiles
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+> Verifica/ajusta con `package.json` del proyecto.
 
-## Acknowledgments
+* `npm run dev` — levantar servidor con hot-reload
+* `npm run build` — compilar a producción
+* `npm start` — iniciar servidor compilado
+* `npm run lint` — revisar lint (ESLint)
+* `npm run format` — formatear (Prettier)
+* `npx prisma studio` — administrar DB vía UI
 
-- [Prisma](https://www.prisma.io/)
-- [Express](https://expressjs.com/)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Winston](https://github.com/winstonjs/winston)
-- And all other amazing open-source projects used in this project.
+---
+
+## 📚 Documentación de la API
+
+* **Swagger UI**: `GET /api-docs` (dev)
+* **Listado de endpoints**: ver [`ENDPOINTS.md`](./ENDPOINTS.md) y guías en [`INSTRUCCIONES_API.md`](./INSTRUCCIONES_API.md).
+
+### Ejemplos (curl)
+
+```bash
+# Login
+curl -X POST http://localhost:3000/api/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"demo@demo.com","password":"secret"}'
+
+# Crear transacción (JWT requerido)
+curl -X POST http://localhost:3000/api/transactions \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"accountId":"...","categoryId":"...","amount":120000,"date":"2025-08-01","notes":"Suscripción"}'
+```
+
+---
+
+## 🔐 Seguridad
+
+* HTTP headers endurecidos con **helmet**
+* **CORS** configurado por entorno
+* **Rate limiting** en rutas sensibles
+* **JWT** con expiración configurable
+* **Validaciones** de entrada a nivel DTO/route
+
+> Recomendado: habilitar **rotación de JWT**, **CSRF** si hay cookies, y **secrets** en variables seguras.
+
+---
+
+## 🧩 Estructura del proyecto (referencial)
+
+```
+src/
+  config/          # configuración (env, prisma, cors)
+  routes/          # definición de rutas Express
+  controllers/     # controladores HTTP
+  services/        # lógica de negocio
+  middlewares/     # auth, validación, errores
+  utils/           # helpers, formatters
+  index.ts         # entrypoint de la app
+prisma/
+  schema.prisma    # modelos y mapeo
+  migrations/      # historial de migraciones
+```
+
+---
+
+## 🔄 Flujo de Autenticación
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant C as Cliente
+  participant A as API
+  participant DB as PostgreSQL
+
+  C->>A: POST /auth/login (email, password)
+  A->>DB: Buscar usuario + hash
+  DB-->>A: Usuario válido
+  A-->>C: 200 (JWT)
+  C->>A: Request a /api/* con Bearer <JWT>
+  A-->>C: 200/401 según autorización
+```
+
+---
+
+## 🐳 Despliegue con Docker (opcional)
+
+> Si aún no existe un `Dockerfile`, puedes usar este ejemplo mínimo:
+
+```Dockerfile
+FROM node:18-alpine AS deps
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+
+FROM node:18-alpine AS builder
+WORKDIR /app
+COPY . .
+RUN npm ci && npm run build
+
+FROM node:18-alpine
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package*.json ./
+EXPOSE 3000
+CMD ["node","dist/index.js"]
+```
+
+**docker-compose.yml** (Postgres incluido):
+
+```yaml
+version: '3.9'
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: finanzia
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/finanzia
+      PORT: 3000
+      JWT_SECRET: change-me
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"
+volumes:
+  pgdata:
+```
+
+---
+
+## ✅ Healthcheck / Status
+
+* `GET /health` → `{ status: "ok", uptime, version }`
+* `GET /metrics` (si se integra Prometheus) → métricas para dashboards
+
+> Sugerencia: añade un **endpoint de status** y un **/metrics** con `prom-client`.
+
+---
+
+## 🧰 Desarrollo y Calidad
+
+* **Lint**: `npm run lint`
+* **Format**: `npm run format`
+* **Pruebas**: `npm test` / `npm run test:coverage`
+* **Husky** (opcional): hooks para pre-commit `lint-staged`
+
+---
+
+## 🛡️ Licencia
+
+Este proyecto usa licencia **MIT**. Consulta [`LICENSE`](./LICENSE) para más detalles.
+
+---
+
+## 🤝 Contribuir
+
+1. Haz fork del repo
+2. Crea rama `feature/mi-feature`
+3. Commits claros (`feat:`, `fix:`, etc.)
+4. PR con descripción, pasos de prueba y screenshots si aplica
+
+---
+
+## 📌 Roadmap breve
+
+* [ ] Endpoint `/health` y `/metrics`
+* [ ] CI con GitHub Actions (build + test + lint)
+* [ ] Seed de categorías y cuenta demo
+* [ ] Ejemplos Postman + colección exportada
+* [ ] Alertas de presupuesto con CRON/Queues
+* [ ] Integración de IA para insights de gasto
+
+---
+
+## 🧭 Referencias rápidas
+
+* Prisma: [https://www.prisma.io/](https://www.prisma.io/)
