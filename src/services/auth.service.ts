@@ -126,7 +126,7 @@ export class AuthService {
   async refreshToken(token: string): Promise<{ accessToken: string; refreshToken: string }> {
     try {
       // Verify the refresh token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as RefreshTokenPayload;
+      const decoded = jwt.verify(token, this.getJwtSecret()) as RefreshTokenPayload;
 
       // Find the token in the database
       const storedToken = await prisma.refreshToken.findFirst({
@@ -171,10 +171,21 @@ export class AuthService {
   }
 
   /**
+   * Retrieve JWT secret from environment
+   */
+  private getJwtSecret(): string {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      throw new Error('JWT_SECRET environment variable is not set');
+    }
+    return secret;
+  }
+
+  /**
    * Generate JWT access token
    */
   private generateAccessToken(payload: JwtPayload): string {
-    const secret = process.env.JWT_SECRET || 'default_secret_key';
+    const secret = this.getJwtSecret();
     return jwt.sign(payload, secret, { expiresIn: '15m' });
   }
 
@@ -188,11 +199,13 @@ export class AuthService {
     // Generate access token
     const accessToken = this.generateAccessToken({ userId, email });
 
+    const secret = this.getJwtSecret();
+
     // Generate refresh token with a unique ID
     const refreshTokenId = uuidv4();
     const refreshToken = jwt.sign(
       { userId, tokenId: refreshTokenId } as RefreshTokenPayload,
-      process.env.JWT_SECRET || 'default_secret_key',
+      secret,
       { expiresIn: '7d' }
     );
 
